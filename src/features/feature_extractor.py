@@ -23,7 +23,7 @@ class FeatureExtractor(ABC):
     def __str__(self) -> str:
         return f"{self.__class__.__name__} with model {self.model.__class__.__name__}"
 
-    def __call__(self, *args: Any, **kwds: Any) -> Any:
+    def __call__(self, *args: Any, **kwds: Any) -> np.ndarray:
         result = self._extract(*args, **kwds)
         # Check type of result
         if not isinstance(result, np.ndarray):
