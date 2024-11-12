@@ -6,10 +6,6 @@ from src.utils.logger import logger
 
 class DataLoader:
     def __init__(self, data_path: str):
-        if not os.path.exists(data_path):
-            logger.error(f"Data path {data_path} does not exist.")
-            raise FileNotFoundError(f"Data path {data_path} does not exist.")
-
         self.data_path = data_path
         if not os.path.isdir(self.data_path):
             logger.error(f"{self.data_path} is not a directory.")
