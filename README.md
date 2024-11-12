@@ -11,6 +11,11 @@
 
 ## We can combined with multiple Faiss indexes from different models and construct a more robust k-NN classifier.
 
+> **Note:** You must use a feature extractor with general training objective like imagenet or COCO.
+>
+> Only use domain specific if the new classes added to the index are in the same domain. 
+
+
 
 ## Installation
 ```bash
