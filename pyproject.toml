@@ -1,0 +1,20 @@
+[project]
+name = "test-time-classifier"
+version = "0.1.0"
+description = "Test Time Classifier, an app for test-time training using the god of dimensionality, Faiss."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "faiss-gpu>=1.7.2",
+  "fastapi>=0.115.4",
+  "loguru>=0.7.2",
+  "numpy<2.0.0",
+  "pandas>=2.2.3",
+  "pytest>=8.3.3",
+  "python-multipart>=0.0.17",
+  "scikit-learn>=1.5.2",
+  "torch>=2.5.1",
+  "torchvision>=0.20.1",
+  "tqdm>=4.67.0",
+  "uvicorn>=0.32.0",
+]
