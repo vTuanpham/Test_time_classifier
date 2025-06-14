@@ -6,7 +6,7 @@ from fastapi import File, UploadFile, Form, HTTPException, APIRouter
 import numpy as np
 
 from src.config.settings import Settings
-from src.data.data_loader import DataLoader
+from src.data import DataLoader, TextDataLoader
 from src.database.feature_database import FeatureDatabase
 from src.search.similarity_search import SimilaritySearch
 from src.classifier.classifier import Classifier
@@ -25,7 +25,13 @@ class TestTimeRouter:
 
         logger.info("Initializing Test-Time Compute Classifier API components.")
 
-        data_loader = DataLoader(Settings.DATA_PATH)
+        try:
+            DataLoaderCls = dynamic_import("src.data", Settings.DATA_LOADER)
+        except Exception as e:
+            logger.error(f"Failed to load data loader: {e}")
+            raise HTTPException(status_code=500, detail="Failed to load data loader.")
+
+        data_loader = DataLoaderCls(Settings.DATA_PATH)
 
         try:
             feature_extractor = dynamic_import("src.features", Settings.FEATURE_MODEL)()
@@ -85,7 +91,9 @@ class TestTimeRouter:
         )
         self.router.post("/add_class", summary="Add class")(self.add_class)
         self.router.post("/upload_images", summary="Upload images")(self.upload_images)
+        self.router.post("/upload_texts", summary="Upload texts")(self.upload_texts)
         self.router.post("/classify", summary="Classify image")(self.classify_image)
+        self.router.post("/classify_text", summary="Classify text")(self.classify_text)
         self.router.get("/classes", summary="List classes")(self.list_classes)
         self.router.get("/health", summary="Health check")(self.health_check)
 
@@ -170,6 +178,57 @@ class TestTimeRouter:
             "message": f"Uploaded {len(saved_files)} images to class '{class_name}' successfully."
         }
 
+    async def upload_texts(
+        self, class_name: str = Form(...), files: List[UploadFile] = File(...)
+    ):
+        class_dir = os.path.join(Settings.DATA_PATH, class_name)
+        if not os.path.exists(class_dir):
+            logger.warning(f"Class '{class_name}' does not exist.")
+            raise HTTPException(status_code=404, detail=f"Class '{class_name}' does not exist.")
+
+        saved_files = []
+        for file in files:
+            unique_filename = f"{uuid.uuid4().hex}.txt"
+            file_path = os.path.join(class_dir, unique_filename)
+            try:
+                content = await file.read()
+                with open(file_path, "w", encoding="utf-8") as f:
+                    f.write(content.decode("utf-8"))
+                saved_files.append(unique_filename)
+                logger.info(f"Saved text {unique_filename} to class '{class_name}'.")
+            except Exception as e:
+                logger.error(f"Failed to save text '{file.filename}': {e}")
+                raise HTTPException(status_code=500, detail=f"Failed to save text '{file.filename}'.")
+            finally:
+                await file.close()
+
+        try:
+            feature_vectors = []
+            valid_labels = []
+            for fname in saved_files:
+                with open(os.path.join(class_dir, fname), "r", encoding="utf-8") as f:
+                    text = f.read()
+                feat = feature_extractor(text)
+                if feat.size > 0:
+                    feature_vectors.append(feat)
+                    valid_labels.append(class_name)
+                else:
+                    logger.warning("Feature extraction failed for an uploaded text.")
+            if feature_vectors:
+                features_np = np.array(feature_vectors).astype("float32")
+                feature_db.add_features(features_np, valid_labels)
+                feature_db.save_database()
+                logger.info("Uploaded texts processed and database updated.")
+            else:
+                logger.warning("No valid features extracted from uploaded texts.")
+        except Exception as e:
+            logger.error(f"Failed during text feature extraction and database update: {e}")
+            raise HTTPException(status_code=500, detail="Failed to process uploaded texts.")
+
+        return {
+            "message": f"Uploaded {len(saved_files)} texts to class '{class_name}' successfully."
+        }
+
     async def classify_image(self, file: UploadFile = File(...)):
         # Save the uploaded image to a temporary location
         temp_dir = "temp_uploads"
@@ -215,6 +274,21 @@ class TestTimeRouter:
 
         # Clean up temporary files
         shutil.rmtree(temp_dir)
+
+        return {"prediction": prediction}
+
+    async def classify_text(self, text: str = Form(...)):
+        try:
+            feature_vector = feature_extractor(text)
+            if feature_vector.size == 0:
+                logger.error("Feature extraction returned empty vector for text.")
+                raise HTTPException(status_code=500, detail="Failed to extract features from the text.")
+            feature_np = feature_vector.reshape(1, -1).astype("float32")
+            prediction = classifier.predict(feature_np, Settings.K_NEIGHBORS)
+            logger.info(f"Text classified as: {prediction}")
+        except Exception as e:
+            logger.error(f"Failed during text classification: {e}")
+            raise HTTPException(status_code=500, detail="Failed to classify the text.")
 
         return {"prediction": prediction}
 
