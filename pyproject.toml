@@ -16,5 +16,6 @@ dependencies = [
   "torch>=2.5.1",
   "torchvision>=0.20.1",
   "tqdm>=4.67.0",
+  "sentence-transformers>=2.7.0",
   "uvicorn>=0.32.0",
 ]

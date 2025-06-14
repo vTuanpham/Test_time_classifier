@@ -12,4 +12,5 @@ class Settings:
     )
     LOGGING_LEVEL: ClassVar[str] = os.getenv("LOGGING_LEVEL", "INFO")
     FEATURE_MODEL: ClassVar[str] = os.getenv("FEATURE_MODEL", "ResNetExtractor")
+    DATA_LOADER: ClassVar[str] = os.getenv("DATA_LOADER", "DataLoader")
     K_NEIGHBORS: ClassVar[int] = int(os.getenv("K_NEIGHBORS", 5))

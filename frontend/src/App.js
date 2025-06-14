@@ -10,7 +10,9 @@ import {
 } from "@mui/material";
 import AddClassForm from "./components/AddClassForm";
 import UploadImages from "./components/UploadImages";
+import UploadTexts from "./components/UploadTexts";
 import ClassifyImage from "./components/ClassifyImage";
+import ClassifyText from "./components/ClassifyText";
 import ClassList from "./components/ClassList";
 
 function App() {
@@ -33,7 +35,9 @@ function App() {
         <Tabs value={currentTab} onChange={handleChange} centered>
           <Tab label="Add Class" />
           <Tab label="Upload Images" />
+          <Tab label="Upload Texts" />
           <Tab label="Classify Image" />
+          <Tab label="Classify Text" />
           <Tab label="View Classes" />
         </Tabs>
         <TabPanel value={currentTab} index={0}>
@@ -43,9 +47,15 @@ function App() {
           <UploadImages />
         </TabPanel>
         <TabPanel value={currentTab} index={2}>
-          <ClassifyImage />
+          <UploadTexts />
         </TabPanel>
         <TabPanel value={currentTab} index={3}>
+          <ClassifyImage />
+        </TabPanel>
+        <TabPanel value={currentTab} index={4}>
+          <ClassifyText />
+        </TabPanel>
+        <TabPanel value={currentTab} index={5}>
           <ClassList />
         </TabPanel>
       </Container>

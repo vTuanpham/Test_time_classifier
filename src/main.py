@@ -2,7 +2,7 @@ import argparse
 import numpy as np
 
 from src.config.settings import Settings
-from src.data.data_loader import DataLoader
+from src.data import DataLoader
 from src.features.feature_extractor import FeatureExtractor
 from src.database.feature_database import FeatureDatabase
 from src.search.similarity_search import SimilaritySearch

@@ -2,18 +2,15 @@ import os
 from typing import List, Tuple
 from src.utils.helpers import is_image_file
 from src.utils.logger import logger
+from .base_loader import BaseDataLoader
 
 
-class DataLoader:
+class ImageDataLoader(BaseDataLoader):
+    """Load images organized in class subdirectories."""
+
     def __init__(self, data_path: str):
-        self.data_path = data_path
-        if not os.path.isdir(self.data_path):
-            logger.error(f"{self.data_path} is not a directory.")
-            raise NotADirectoryError(f"{self.data_path} is not a directory.")
-        logger.info(f"Data path: {self.data_path}")
-        os.makedirs(self.data_path, exist_ok=True)
-        self.classes = self._get_classes()
-        logger.info(f"Loaded classes: {self.classes}")
+        logger.info(f"Data path: {data_path}")
+        super().__init__(data_path)
 
     def _get_classes(self) -> List[str]:
         classes = [
@@ -42,3 +39,7 @@ class DataLoader:
                     logger.debug(f"Non-image file skipped: {file}")
         logger.info(f"Loaded {len(image_paths)} images from {self.data_path}.")
         return image_paths, labels
+
+
+# Backwards compatibility
+DataLoader = ImageDataLoader

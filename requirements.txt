@@ -120,6 +120,7 @@ torch==2.5.1
 torchvision==0.20.1
     # via test-time-classifier (pyproject.toml)
 tqdm==4.67.0
+sentence-transformers==2.7.0
     # via test-time-classifier (pyproject.toml)
 triton==3.1.0
     # via torch
